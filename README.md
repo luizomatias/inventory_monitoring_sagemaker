@@ -1,25 +1,55 @@
-**NOTE:** This file is a template that you can use to create the README for your project. The **TODO** comments below will highlight the information you should be sure to include.
+# Inventory Monitoring at Distribution Centers
+ 
 
-# Your Project Title Here
+There are a lot of labor requirements associated with manual inventory management, as well as the possibility of errors. So, there is a need for an effective inventory management.
+Proper warehouse inventory management can save you money, including labor, storage, and fulfillment costs. This can be done by optimizing storage, investing in warehouse automation, organizing inventory to speed up the picking and packing process, and implementing technology to automate tasks that reduce human error.
+Machine learning is one technology that can automate those processes. Computer vision can be used to automate inventory monitoring using convolution neural network to count the number of objects in each bin and ensure that delivery consignments contain the correct number of items.
 
-**TODO:** Write a short introduction to your project.
-
-## Project Set Up and Installation
-**OPTIONAL:** If your project has any special installation steps, this is where you should put it. To turn this project into a professional portfolio project, you are encouraged to make your `README` detailed and self-explanatory. For instance, here you could explain how to set up your project in AWS and provide helpful screenshots of the process.
 
 ## Dataset
 
-### Overview
-**TODO**: Explain about the data you are using and where you got it from.
+The Amazon Bin Image Dataset contains over 500,000 images and metadata from bins of a pod in an operating Amazon Fulfillment Center. The bin images in this dataset are captured as robot units carry pods as part of normal Amazon Fulfillment Center operations.
+Since this is a large dataset, a sample of the dataset is used. The dataset is available on Amazon S3.
+There will be subfolders for the data subset created. The number of objects in each of these subfolders equals the name of the folder. In folder 1, for example, there is exactly one object in every image. Afterwards, training, testing, and validation datasets will be developed.
 
-### Access
-**TODO**: Explain how you are accessing the data in AWS and how you uploaded it
+## Solution Statement
+To solve this image classification problem, it will be used computer vision techniques, in this case a pre-trained (Resnet 50) deep learning model. As input, we provide an image of a bin containing products and as output, we give predicted scores for each category type, for instance, number of objects. All data will be storage at S3.
+The algorithm will be built using Convolution Neural Netwook (CNN) and the framework Pytorch. To improve the performance of the model, SageMaker’s Hyperparameter Tuning will be used. After that, SageMaker endpoint will be created to deploy the model.
+The SageMaker Studio will be used as our environment. To train the instance ml.g4dn.xlarge was used.
 
-## Model Training
-**TODO**: What kind of model did you choose for this experiment and why? Give an overview of the types of hyperparameters that you specified and why you chose them. Also remember to evaluate the performance of your model.
+## Project Pipeline
+![Project Pipeline](img/project_diagrams.png)
 
-## Machine Learning Pipeline
-**TODO:** Explain your project pipeline.
+## Hyperparameter Tuning
+This project we will train a model (using ResNet50 and then hyperparameter tuning). 
 
-## Standout Suggestions
-**TODO (Optional):** This is where you can provide information about any standout suggestions that you have attempted.
+Parameters range used for the hyperparameters search:
+
+- learning rate - 0.0001 to 0.1
+- batch size - 64, 128 and 256
+
+## Hyperparameter tuning jobs
+![Hyperparameter tuning](img/hyper.png)
+
+## Best training Hyperparameters
+{'batch_size': 64, 'lr': '0.000748520739996759'}
+
+## Training job with the best Hyperparameters
+![Best training job logs](img/training.png)
+
+## Debugging and Profiling
+The Debugging hook track the Cross Entropy Loss from training and validation phases as show below:
+
+![Cross Entropy](img/evaluation.png)
+
+
+Is there some anomalous behaviour in your debugging output? If so, what is the error and how will you fix it?  
+If not, suppose there was an error. What would that error look like and how would you have fixed it?
+
+- Seems to have a little overfitting. We could try different neural network architecture or use some regularization like dropout.
+
+## Model Deployment
+We writed an inference script (endpoint.py) that implements model_fn, predict_fn and input_fn and deployed to a ml.m5.large instance. (learn more here: https://sagemaker.readthedocs.io/en/stable/frameworks/pytorch/using_pytorch.html#write-an-inference-script) and predicted in a test image.
+
+![endpoint](img/endpoint.png)
+
